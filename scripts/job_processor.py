@@ -4,6 +4,7 @@ from pyspark.sql.types import DoubleType, IntegerType, StringType
 from pyspark.sql import HiveContext
 from pyspark.sql.functions import *
 from pyspark.sql import functions as f
+import os, sys
 import re
 
 spark = SparkSession.builder.master("local[*]")\
@@ -174,20 +175,14 @@ dim_tempo = dim_tempo.select('DATA', 'NR_ANO', 'NM_TRIMESTRE', 'NM_MES'
                              , 'NR_DIA', 'NM_DIA_SEMANA')
 
 # Realizando o Join entre Endereço, Divisao e Regiao e fazendo Select das colunas que vou utilizar
-stg_cliente = df_clientes.join(df_endereco, df_clientes.address_number == df_endereco.address_number, 'inner')\
-            .join(df_divisao, df_clientes.division == df_divisao.division, 'inner')\
-            .join(df_regiao, df_clientes.region_code == df_regiao.region_code, 'inner')\
-            .select(df_endereco.address_number, df_endereco.city, df_endereco.state, df_divisao.division_name
-                   , df_regiao.region_name, df_clientes.customerkey, df_clientes.customer, df_clientes.customer_type)
+stg_cliente = df_clientes.join(df_endereco, df_clientes.address_number == df_endereco.address_number, 'left').join(df_divisao, df_clientes.division == df_divisao.division, 'inner').join(df_regiao, df_clientes.region_code == df_regiao.region_code, 'inner').select(df_clientes.address_number, df_endereco.city, df_endereco.state, df_divisao.division_name, df_regiao.region_name, df_clientes.customerkey, df_clientes.customer, df_clientes.
+customer_type)
+
+# Preenchendo Cidade e Estado com "Nao informado" de modo que as demais informações nao se percam, tais como produtos vendidos e também valores faturados
+stg_cliente = stg_cliente.na.fill('Nao informado')
 
 # Realizando o Join da stg_cliente com a df_vendas
-df_vendas_stg = df_vendas.join(stg_cliente, df_vendas.customerkey == stg_cliente.customerkey, 'left')\
-                .join(dim_tempo, df_vendas.datekey == dim_tempo.DATA)\
-                .select(stg_cliente.address_number, stg_cliente.city, stg_cliente.state, stg_cliente.division_name
-                        , stg_cliente.region_name, stg_cliente.customerkey, stg_cliente.customer
-                        , stg_cliente.customer_type, df_vendas.item_number, df_vendas.item, df_vendas.sales_amount
-                        , df_vendas.item_class, df_vendas.datekey, dim_tempo.NR_ANO, dim_tempo.NM_TRIMESTRE
-                        , dim_tempo.NM_MES, dim_tempo.NR_DIA, dim_tempo.NM_DIA_SEMANA)
+df_vendas_stg = df_vendas.join(stg_cliente, df_vendas.customerkey == stg_cliente.customerkey, 'inner').join(dim_tempo, df_vendas.datekey == dim_tempo.DATA).select(stg_cliente.address_number, stg_cliente.city, stg_cliente.state, stg_cliente.division_name, stg_cliente.region_name, df_vendas.customerkey, stg_cliente.customer, stg_cliente.customer_type, df_vendas.item_number, df_vendas.item, df_vendas.sales_amount, df_vendas.item_class, df_vendas.datekey, dim_tempo.NR_ANO, dim_tempo.NM_TRIMESTRE, dim_tempo.NM_MES, dim_tempo.NR_DIA, dim_tempo.NM_DIA_SEMANA)
 
 # Criando a SK de produto com Hash das colunas de suas dimensões
 df_vendas_stg = df_vendas_stg.withColumn("SK_PRODUTO", sha2(concat_ws("", df_vendas_stg.item_number, df_vendas_stg.item, df_vendas_stg.item_class), 256))
@@ -266,52 +261,96 @@ ft_vendas = spark.sql(""" SELECT SK_CLIENTE, SK_PRODUTO, SK_LOCALIDADE, SK_DATA,
                         GROUP BY SK_CLIENTE, SK_PRODUTO, SK_LOCALIDADE, SK_DATA
                         ORDER BY QTD_VENDAS DESC""")
 
-# Salvando a Dimensão Cliente numa só tabela CSV com uma só partição, com header e separado por ;
-# Salvando no HDFS
+# Criando job para salvar meus arquivos que serão baixados do HDFS e renomea-los já com o nome corretos
+# O ideal era que fosse uma função, mas para fins didáticos, dessa forma atende a demanda
+
+# A variável stage diz onde o arquivo deve ser baixado no HDFS
+stage = "/projeto_final/staging/"
+
+# A varivel output diz a pasta onde ela deve ser movida após a stage
+# A variável erase apaga arquivos no output, caso ja exista, para que nao haja choque de mesmo nome (exemplo de overwrite)
+# A variavel rename, além de mover, renomer o arquivo entre uma pasta e outra
+
+# Dimensao Clientes
+
+file = 'dimclientes'
+output = "/projeto_final/dados_saida/" + file
+erase = "hdfs dfs -rm " + output + "/*" 
+rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
+
 dim_clientes.coalesce(1).write\
         .format("csv")\
-        .option("dbtable", dim_clientes)\
         .option("header", True)\
         .option("delimiter", ";")\
         .mode("overwrite")\
-        .save("/projeto_final/dados_saida/dimclientes")
+        .save(stage)
 
-# Salvando a Dimensão Produtos numa só tabela CSV com uma só partição, com header e separado por ;
-# Salvando no HDFS
+os.system(erase)
+os.system(rename)
+
+# Dimensao Produtos
+
+file = 'dimprodutos'
+output = "/projeto_final/dados_saida/" + file
+erase = "hdfs dfs -rm " + output + "/*" 
+rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
+
 dim_produtos.coalesce(1).write\
         .format("csv")\
-        .option("dbtable", dim_produtos)\
         .option("header", True)\
         .option("delimiter", ";")\
         .mode("overwrite")\
-        .save("/projeto_final/dados_saida/dimprodutos")
+        .save(stage)
 
-# Salvando a Dimensão Localidade numa só tabela CSV com uma só partição, com header e separado por ;
-# Salvando no HDFS
+os.system(erase)
+os.system(rename)
+
+# Dimensao Localidade
+
+file = 'dimlocalidade' 
+output = "/projeto_final/dados_saida/" + file
+erase = "hdfs dfs -rm " + output + "/*" 
+rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
+
 dim_localidade.coalesce(1).write\
         .format("csv")\
-        .option("dbtable", dim_localidade)\
         .option("header", True)\
         .option("delimiter", ";")\
         .mode("overwrite")\
-        .save("/projeto_final/dados_saida/dimlocalidade")
+        .save(stage)
 
-# Salvando a Dimensão Tempo numa só tabela CSV com uma só partição, com header e separado por ;
-# Salvando no HDFS
+os.system(erase)
+os.system(rename)
+
+# Dimensao Tempo
+
+file = 'dimtempo' 
+output = "/projeto_final/dados_saida/" + file
+erase = "hdfs dfs -rm " + output + "/*" 
+rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
+
 dim_tempo.coalesce(1).write\
         .format("csv")\
-        .option("dbtable", dim_tempo)\
         .option("header", True)\
         .option("delimiter", ";")\
         .mode("overwrite")\
-        .save("/projeto_final/dados_saida/dimtempo")
+        .save(stage)
+os.system(erase)
+os.system(rename)
 
-# Salvando a Tabela Fato numa só tabela CSV com uma só partição, com header e separado por ;
-# Salvando no HDFS
+# Fato Vendas
+
+file = 'fatovendas'
+output = "/projeto_final/dados_saida/" + file
+erase = "hdfs dfs -rm " + output + "/*" 
+rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
+
 ft_vendas.coalesce(1).write\
         .format("csv")\
-        .option("dbtable", ft_vendas)\
         .option("header", True)\
         .option("delimiter", ";")\
         .mode("overwrite")\
-        .save("/projeto_final/dados_saida/fatovendas")
+        .save(stage)
+
+os.system(erase)
+os.system(rename)
