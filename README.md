@@ -55,8 +55,6 @@
 
 ## ✔️ ESTRUTURA E RESOLUTIVA
 
-### :construction: Projeto em construção :construction:
-
 Dentro do Container, aliadas as pastas já existentes, foram agregadas mais algumas pastas com scripts para execução do jobs da melhor forma.
 
 Abaixo estão listadas as pastas e arquivos, representando a execução da Etapa 1, 2, 3, 4 e 5, com a descrição do que representa cada conteúdo:
@@ -71,21 +69,25 @@ Abaixo estão listadas as pastas e arquivos, representando a execução da Etapa
   * **hql-endereco**
   * **hql-regiao**
   * **hql-vendas**
-* **malha**: Pasta onde constará os scripts para ingestão das tabelas e execução do código em Spark
+* **malha**: Pasta onde constará os scripts para ingestão das tabelas e execução do código em Spark, nela também estará o arquivo .py que realizará o tratamento em Spark da tabela interna.
   * *jobs_hive*: Script para executar outros scripts relativos à criação da tabela externa e interna, com os seus devidos testes para confirmação se os dados realmente foram inseridos nos conformes.
   * *jobs_spark*: Script para executar o código criado em pyspark para tratamento dos dados da tabela interna e criação das dimensões e tabela FATO.
-* **scripts**: Pasta que conterá todos os scripts em bash, para **criação de tabelas**, **inserção dos dados na tabela externa e interna**, nessa pasta também estará o arquivo .py que realizará o tratamento em Spark da tabela interna.
+  * *job_processor*: Script python. Ele será responsável pelo tratamento dos dados da tabela interna.
+* **scripts**: Pasta que conterá todos os scripts em bash, para **criação de tabelas**, **inserção dos dados na tabela externa e interna**.
   * **create_tables**: Pasta que conterá os scripts para criação das 10 tabelas dentro do Hive (internas e externas), repassando as variáveis via Shell Script.
   * *insert_data_worked_table*: Script que passa variáveis e executa o .hql de inserção de dados na tabela interna derivado da tabela externa.
   * *update_data_external_table*: Script que passa varíáveis e informa o path do arquivo .csv para construção da tabela Externa. 
   * *job_processor*: Script python. Ele será responsável pelo tratamento dos dados da tabela interna.
+* **tests**: Pasta que constará a validação do arquivo com um notebook Jupyter (Python).
+* **utils**: Pasta com os a arquivos auxiliares do projeto, como, o desenho das dimensões em .pdf e editáveis, além do notebook que foi trabalhado para chegar no código final em script Python.
 * *rollback*: Script para deleção dos arquivos .csv do HDFS e das tabelas e BD do Hive, em caso de erro na execução das tabelas.
 * *rollout*: Script para criação das pastas no HDFS e para chamar os scrips que criam as tabelas.
 
 ### ⚙️ Executando os testes
+* O teste consiste em verificar se o quantitativo de vendas do arquivo inicial (retirando as linhas totalmente nulas), condiziam com a tabela FATO do fim, após todo o tratamento. Foi utilizado a linguagem Python com condições que informariam se a validação foi ok ou não.
 
 ### 📊 Dashboard
-
+[![hXBR24.md.jpg](https://iili.io/hXBR24.md.jpg)](https://freeimage.host/i/hXBR24)
 
 ### 🔧 Ferramentas utilizadas
 - ``Shell Script``
@@ -98,4 +100,5 @@ Abaixo estão listadas as pastas e arquivos, representando a execução da Etapa
 * **Caiuá França** - *desafio_bigdata_final* - [caiuafranca](https://github.com/caiuafranca/desafio_bigdata_final)
 
 
+:construction: *O código está finalizado, porém, passará por constantes atualizações.*
 
