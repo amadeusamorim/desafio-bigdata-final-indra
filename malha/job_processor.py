@@ -4,7 +4,7 @@ from pyspark.sql.types import DoubleType, IntegerType, StringType
 from pyspark.sql import HiveContext
 from pyspark.sql.functions import *
 from pyspark.sql import functions as f
-import os, sys
+import os
 import re
 
 spark = SparkSession.builder.master("local[*]")\
@@ -267,7 +267,7 @@ ft_vendas = spark.sql(""" SELECT SK_CLIENTE, SK_PRODUTO, SK_LOCALIDADE, SK_DATA,
 # A variável stage diz onde o arquivo deve ser baixado no HDFS
 stage = "/projeto_final/staging/"
 
-# A varivel output diz a pasta onde ela deve ser movida após a stage
+# A variável output diz a pasta onde ela deve ser movida após a stage
 # A variável erase apaga arquivos no output, caso ja exista, para que nao haja choque de mesmo nome (exemplo de overwrite)
 # A variavel rename, além de mover, renomer o arquivo entre uma pasta e outra
 

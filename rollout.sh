@@ -2,19 +2,36 @@
 
 # Criando pastas no HDFS
 
-echo "Criando HDFS de Clientes"
+echo -e "\n--- Criando Pastas de Entradas no HDFS ---\n"
+
+echo "Pasta de Clientes - HDFS"
 hdfs dfs -mkdir -p /projeto_final/clientes
-echo "Criando HDFS de Divisão"
+echo "Pasta de Divisão - HDFS"
 hdfs dfs -mkdir -p /projeto_final/divisao
-echo "Criando HDFS de Endereço"
+echo "Pasta de Endereço - HDFS"
 hdfs dfs -mkdir -p /projeto_final/endereco
-echo "Criando HDFS de Regiao"
+echo "Pasta de Região - HDFS"
 hdfs dfs -mkdir -p /projeto_final/regiao
-echo "Criando HDFS de Vendas"
+echo "Pasta de Vendas - HDFS"
 hdfs dfs -mkdir -p /projeto_final/vendas
 
+echo -e "\n--- Criando Pasta Staging no HDFS ---\n"
+hdfs dfs -mkdir -p /projeto_final/staging
+
+echo -e "\n--- Criando Pastas para Dimensão e FATO no HDFS ---\n"
+echo "Pasta de Dimensão Clientes - HDFS"
+hdfs dfs -mkdir -p /projeto_final/dados_saida/dimclientes
+echo "Pasta de Dimensão Localidade - HDFS"
+hdfs dfs -mkdir -p /projeto_final/dados_saida/dimlocalidade
+echo "Pasta de Dimensão Produtos - HDFS"
+hdfs dfs -mkdir -p /projeto_final/dados_saida/dimprodutos
+echo "Pasta de Dimensão Tempo - HDFS"
+hdfs dfs -mkdir -p /projeto_final/dados_saida/dimtempo
+echo "Pasta de FATO Vendas - HDFS"
+hdfs dfs -mkdir -p /projeto_final/dados_saida/fatovendas
+
 # Executar o Create Tables
-echo "Criando as Tabelas"
+echo -e "\n--- Criando Tabelas no Hive ---\n"
 cd scripts/create_tables
 
 echo "Tabela Clientes"

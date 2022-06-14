@@ -1,27 +1,30 @@
 #!/bin/bash
 # Drop tabelas
+
+echo -e "\n--- Deletando pastas do HDFS ---\n"
 hdfs dfs -rm -r /projeto_final/
 
-# Drop HDFS
-echo "Deletanto tabela de CLIENTES"
+echo -e "\n--- Deletando tabelas Hive ---\n"
+
+echo "Deletando tabela de CLIENTES"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_CLIENTES;"
-echo "Deletanto tabela de CLIENTES_EXTERNA"
+echo "Deletando tabela de CLIENTES_EXTERNA"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_CLIENTES_STG;"
-echo "Deletanto tabela de DIVISAO"
+echo "Deletando tabela de DIVISAO"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_DIVISAO;"
-echo "Deletanto tabela de DIVISAO_EXTERNAL"
+echo "Deletando tabela de DIVISAO_EXTERNAL"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_DIVISAO_STG;"
-echo "Deletanto tabela de ENDERECO"
+echo "Deletando tabela de ENDERECO"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_ENDERECO;"
-echo "Deletanto tabela de ENDERECO_EXTERNAL"
+echo "Deletando tabela de ENDERECO_EXTERNAL"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_ENDERECO_STG;"
-echo "Deletanto tabela de REGIAO"
+echo "Deletando tabela de REGIAO"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_REGIAO;"
-echo "Deletanto tabela de REGIAO_EXTERNAL"
+echo "Deletando tabela de REGIAO_EXTERNAL"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_REGIAO_STG;"
-echo "Deletanto tabela de VENDAS"
+echo "Deletando tabela de VENDAS"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_VENDAS;"
-echo "Deletanto tabela de VENDAS_EXTERNAL"
+echo "Deletando tabela de VENDAS_EXTERNAL"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP TABLE IF EXISTS desafio_final.TBL_VENDAS_STG;"
-echo "Deletanto banco do desafio"
+echo "Deletando banco do desafio"
 beeline -u jdbc:hive2://localhost:10000 -e "DROP DATABASE IF EXISTS desafio_final;"
