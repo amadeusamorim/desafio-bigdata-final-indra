@@ -87,7 +87,7 @@ Abaixo estão listadas as pastas e arquivos, representando a execução da Etapa
 * O teste consiste em verificar se o quantitativo de vendas do arquivo inicial (retirando as linhas totalmente nulas), condiziam com a tabela FATO do fim, após todo o tratamento. Foi utilizado a linguagem Python com condições que informariam se a validação foi ok ou não.
 
 ### 📊 Dashboard
-[![hXBR24.md.jpg](https://iili.io/hXBR24.md.jpg)](https://freeimage.host/i/hXBR24)
+[![hXYUzJ.md.jpg](https://iili.io/hXYUzJ.md.jpg)](https://freeimage.host/i/hXYUzJ)
 
 ### 🔧 Ferramentas utilizadas
 - ``Shell Script``
