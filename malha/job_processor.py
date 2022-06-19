@@ -67,46 +67,41 @@ df_regiao = df_regiao.drop('dt_foto')
 # Apagando a coluna dt_foto do DF Vendas
 df_vendas = df_vendas.drop('dt_foto')
 
+# Retirando as linhas que são nulas em completo da tabela
+df_vendas = df_vendas.filter(col("customerkey").isNotNull())
+
+# Tratando dados com espaços em branco nas rows (todos são Strings) e tidos como "NotNull"
+for c in df_vendas.columns:
+    df_vendas = df_vendas.withColumn(c, trim(df_vendas[c]))
+    df_vendas = df_vendas.withColumn(c, when(df_vendas[c] == '', 'Nao informado')\
+                                         .otherwise(df_vendas[c]))
+
 # Alterando os tipos das colunas para os seus respectivos e corretos tipos
 # Usando o dtypes que retorna o o nome da coluna e o tipo
 for i in df_vendas.dtypes:
     if re.search("date", i[0]):
-        df_vendas = df_vendas\
-                    .withColumn(
-                        i[0], 
-                        to_date(col(i[0]), 'dd/MM/yyyy')
-                        .alias(i[0])
-                        )
+        df_vendas = df_vendas.withColumn(i[0],to_date(col(i[0]), 'dd/MM/yyyy').alias(i[0]))
 
-vendastodouble = ['discount_amount', 'list_price', 'sales_amount', 
+vendastonumber = ['discount_amount', 'list_price', 'sales_amount', 
                 'sales_amount_based_on_list_price', 'sales_cost_amount',
-                 'sales_margin_amount', 'sales_price']
+                 'sales_margin_amount', 'sales_price', 'sales_quantity']
 
-for c in vendastodouble:
+for c in vendastonumber:
     df_vendas = df_vendas.withColumn(c, regexp_replace(c, '\,', '.'))
-    if c == 'sales_amount':
+    if c == 'sales_amount' or c == 'sales_quantity':
         df_vendas = df_vendas.withColumn(c, col(c).cast('integer'))
     else:
         df_vendas = df_vendas.withColumn(c, col(c).cast('double'))
         df_vendas = df_vendas.withColumn(c, round(c, 2))
 
-# Retirando as linhas nulas da tabela
-df_vendas = df_vendas.filter(col("customerkey").isNotNull())
-
-# Usando o dtypes mais uma vez para preencher os campos nulos, o i[1] representa o tipo e i[0] o nome da coluna
+# Realizando for para checar se a coluna é String e repassando parâmetros 
 # Caso seja int ou double, preencher com 0, caso seja string preencher com Nao informado
+
 for i in df_vendas.dtypes:
     if re.search("int", i[1]) or re.search("double", i[1]):
-        df_vendas = df_vendas.withColumn(i[0], trim(df_vendas[i[0]]))
-        df_vendas = df_vendas.withColumn(i[0], when(df_vendas[i[0]] == '', 0)\
-                                         .when(df_vendas[i[0]].isNull(), 0)\
-                                         .otherwise(df_vendas[i[0]]))
-    if re.search("string", i[1]):
-        df_vendas = df_vendas.withColumn(i[0], trim(df_vendas[i[0]]))
-        df_vendas = df_vendas.withColumn(i[0], when(df_vendas[i[0]] == '', "Nao informado")\
-                                         .when(df_vendas[i[0]].isNull(), "Nao informado")\
-                                         .otherwise(df_vendas[i[0]]))  
-
+        df_vendas = df_vendas.withColumn(i[0], when(df_vendas[i[0]].isNull(), 0).otherwise(df_vendas[i[0]]))  
+    elif re.search("string", i[1]):
+        df_vendas = df_vendas.withColumn(i[0], when(df_vendas[i[0]].isNull(), 'Nao informado').otherwise(df_vendas[i[0]]))
 
 ### CóDIGOS ABAIXO REFERENTES AS TABELAS DIMENSIONAL E FATO ###
 
@@ -151,15 +146,15 @@ dim_tempo = dim_tempo.withColumn('NM_MES', when(dim_tempo.NR_MES == 1, "Janeiro"
                                  .when(dim_tempo.NR_MES == 11, "Novembro")\
                                  .when(dim_tempo.NR_MES == 12, "Dezembro"))
 
-# Pegando os dias da semana e em seguida atribuindo nome ao número relativos a esses dias
-dim_tempo = dim_tempo.withColumn('NM_DIA_SEMANA', dayofweek(col('DATA')))
-dim_tempo = dim_tempo.withColumn('NM_DIA_SEMANA', when(dim_tempo.NM_DIA_SEMANA == 1, "Domingo")\
-                                 .when(dim_tempo.NM_DIA_SEMANA == 2, "Segunda-feira")\
-                                 .when(dim_tempo.NM_DIA_SEMANA == 3, "Terça-feira")\
-                                 .when(dim_tempo.NM_DIA_SEMANA == 4, "Quarta-feira")\
-                                 .when(dim_tempo.NM_DIA_SEMANA == 5, "Quinta-feira")\
-                                 .when(dim_tempo.NM_DIA_SEMANA == 6, "Sexta-feira")\
-                                 .when(dim_tempo.NM_DIA_SEMANA == 7, "Sábado"))
+# Pegando os dias da semana e em seguida atribuindo nome ao número relativos a esses dias em outra coluna
+dim_tempo = dim_tempo.withColumn('NR_DIA_SEMANA', dayofweek(col('DATA')))
+dim_tempo = dim_tempo.withColumn('NM_DIA_SEMANA', when(dim_tempo.NR_DIA_SEMANA == 1, "Domingo")\
+                                 .when(dim_tempo.NR_DIA_SEMANA == 2, "Segunda-feira")\
+                                 .when(dim_tempo.NR_DIA_SEMANA == 3, "Terça-feira")\
+                                 .when(dim_tempo.NR_DIA_SEMANA == 4, "Quarta-feira")\
+                                 .when(dim_tempo.NR_DIA_SEMANA == 5, "Quinta-feira")\
+                                 .when(dim_tempo.NR_DIA_SEMANA == 6, "Sexta-feira")\
+                                 .when(dim_tempo.NR_DIA_SEMANA == 7, "Sábado"))
 
 # Definindo os números da semana no ano
 dim_tempo = dim_tempo.withColumn('NR_SEMANA', weekofyear(col('DATA')))
@@ -171,8 +166,8 @@ dim_tempo = dim_tempo.withColumn('NR_DIA', f.date_format(f.col('date'), 'dd').ca
 dim_tempo = dim_tempo.drop('date')
 
 # Reordenando e ajustando a dimensão Tempo
-dim_tempo = dim_tempo.select('DATA', 'NR_ANO', 'NM_TRIMESTRE', 'NM_MES'
-                             , 'NR_DIA', 'NM_DIA_SEMANA')
+dim_tempo = dim_tempo.select('DATA', 'NR_ANO', 'NM_TRIMESTRE', 'NM_MES', 'NR_SEMANA'
+                             , 'NR_DIA', 'NM_DIA_SEMANA', 'NR_DIA_SEMANA')
 
 # Realizando o Join entre Endereço, Divisao e Regiao e fazendo Select das colunas que vou utilizar
 stg_cliente = df_clientes.join(df_endereco, df_clientes.address_number == df_endereco.address_number, 'left').join(df_divisao, df_clientes.division == df_divisao.division, 'inner').join(df_regiao, df_clientes.region_code == df_regiao.region_code, 'inner').select(df_clientes.address_number, df_endereco.city, df_endereco.state, df_divisao.division_name, df_regiao.region_name, df_clientes.customerkey, df_clientes.customer, df_clientes.
@@ -182,7 +177,7 @@ customer_type)
 stg_cliente = stg_cliente.na.fill('Nao informado')
 
 # Realizando o Join da stg_cliente com a df_vendas
-df_vendas_stg = df_vendas.join(stg_cliente, df_vendas.customerkey == stg_cliente.customerkey, 'inner').join(dim_tempo, df_vendas.datekey == dim_tempo.DATA).select(stg_cliente.address_number, stg_cliente.city, stg_cliente.state, stg_cliente.division_name, stg_cliente.region_name, df_vendas.customerkey, stg_cliente.customer, stg_cliente.customer_type, df_vendas.item_number, df_vendas.item, df_vendas.sales_amount, df_vendas.item_class, df_vendas.datekey, dim_tempo.NR_ANO, dim_tempo.NM_TRIMESTRE, dim_tempo.NM_MES, dim_tempo.NR_DIA, dim_tempo.NM_DIA_SEMANA)
+df_vendas_stg = df_vendas.join(stg_cliente, df_vendas.customerkey == stg_cliente.customerkey, 'inner').join(dim_tempo, df_vendas.datekey == dim_tempo.DATA).select(stg_cliente.address_number, stg_cliente.city, stg_cliente.state, stg_cliente.division_name, stg_cliente.region_name, df_vendas.customerkey, stg_cliente.customer, stg_cliente.customer_type, df_vendas.item_number, df_vendas.item, df_vendas.sales_margin_amount, df_vendas.sales_amount, df_vendas.sales_cost_amount, df_vendas.sales_quantity, df_vendas.item_class, df_vendas.datekey, dim_tempo.NR_ANO, dim_tempo.NM_TRIMESTRE, dim_tempo.NM_MES, dim_tempo.NR_DIA, dim_tempo.NM_DIA_SEMANA, dim_tempo.NR_DIA_SEMANA, dim_tempo.NR_SEMANA)
 
 # Criando a SK de produto com Hash das colunas de suas dimensões
 df_vendas_stg = df_vendas_stg.withColumn("SK_PRODUTO", sha2(concat_ws("", df_vendas_stg.item_number, df_vendas_stg.item, df_vendas_stg.item_class), 256))
@@ -192,7 +187,7 @@ df_vendas_stg = df_vendas_stg.withColumn("SK_CLIENTE", sha2(concat_ws("", df_ven
 
 df_vendas_stg = df_vendas_stg.withColumn("SK_LOCALIDADE", sha2(concat_ws("", df_vendas_stg.address_number, df_vendas_stg.city, df_vendas_stg.state, df_vendas_stg.region_name, df_vendas_stg.division_name), 256))
 
-df_vendas_stg = df_vendas_stg.withColumn("SK_DATA", sha2(concat_ws("", df_vendas_stg.datekey, df_vendas_stg.NR_ANO, df_vendas_stg.NM_TRIMESTRE, df_vendas_stg.NM_MES, df_vendas_stg.NR_DIA, df_vendas_stg.NM_DIA_SEMANA), 256))
+df_vendas_stg = df_vendas_stg.withColumn("SK_DATA", sha2(concat_ws("", df_vendas_stg.datekey, df_vendas_stg.NR_ANO, df_vendas_stg.NM_TRIMESTRE, df_vendas_stg.NM_MES, df_vendas_stg.NR_DIA, df_vendas_stg.NM_DIA_SEMANA, df_vendas_stg.NR_DIA_SEMANA, df_vendas_stg.NR_SEMANA), 256))
 
 # Selecionando as colunas da minha Dimensão Cliente da tabela staging
 dim_clientes = df_vendas_stg.select('SK_CLIENTE', 'customerkey', 'customer', 'customer_type', 'city')
@@ -240,7 +235,17 @@ dim_localidade = dim_localidade.na.drop()
 dim_localidade = dim_localidade.dropDuplicates(["SK_LOCALIDADE"])
 
 # Selecionando as colunas da minha Dimensão Tempo da tabela staging    
-dim_tempo = df_vendas_stg.select('SK_DATA', 'datekey', 'NR_ANO', 'NM_TRIMESTRE', 'NM_MES', 'NR_DIA', 'NM_DIA_SEMANA')
+# Selecionando as colunas da minha Dimensão Tempo da tabela staging    
+dim_tempo = df_vendas_stg.select('SK_DATA', 'datekey', 'NR_ANO', 'NM_TRIMESTRE', 'NM_MES', 'NR_SEMANA', 'NR_DIA', 'NM_DIA_SEMANA', 'NR_DIA_SEMANA')
+
+# Renomeando coluna datekey
+dim_tempo = dim_tempo.withColumnRenamed("datekey", "DATA")
+
+# Eliminando possíveis nulas
+dim_tempo = dim_tempo.na.drop()
+
+# Eliminando duplicidades da SK_PRODUTO (Distinct)
+dim_tempo = dim_tempo.dropDuplicates(["SK_DATA"])
 
 # Renomeando coluna datekey
 dim_tempo = dim_tempo.withColumnRenamed("datekey", "DATA")
@@ -255,102 +260,34 @@ dim_tempo = dim_tempo.dropDuplicates(["SK_DATA"])
 
 df_vendas_stg.createOrReplaceTempView('stg_vendas')
 
-ft_vendas = spark.sql(""" SELECT SK_CLIENTE, SK_PRODUTO, SK_LOCALIDADE, SK_DATA, 
-                        COUNT(item) AS QTD_VENDAS, SUM(sales_amount) AS VL_VENDAS 
+ft_vendas = spark.sql(""" SELECT SK_CLIENTE, SK_PRODUTO, SK_LOCALIDADE, SK_DATA
+                        , COUNT(item) AS QTD_VENDAS, SUM(sales_amount) AS VL_VENDAS
+                        , SUM(sales_margin_amount) AS MARGEM_VENDAS, SUM(sales_quantity) AS PRODUTOS_VENDIDOS
                         FROM stg_vendas
                         GROUP BY SK_CLIENTE, SK_PRODUTO, SK_LOCALIDADE, SK_DATA
                         ORDER BY QTD_VENDAS DESC""")
 
 # Criando job para salvar meus arquivos que serão baixados do HDFS e renomea-los já com o nome corretos
-# O ideal era que fosse uma função, mas para fins didáticos, dessa forma atende a demanda
-
-# A variável stage diz onde o arquivo deve ser baixado no HDFS
-stage = "/projeto_final/staging/"
-
-# A variável output diz a pasta onde ela deve ser movida após a stage
+# A varivel output diz a pasta onde ela deve ser movida após a stage
 # A variável erase apaga arquivos no output, caso ja exista, para que nao haja choque de mesmo nome (exemplo de overwrite)
 # A variavel rename, além de mover, renomer o arquivo entre uma pasta e outra
-
-# Dimensao Clientes
-
-file = 'dimclientes'
-output = "/projeto_final/dados_saida/" + file
-erase = "hdfs dfs -rm " + output + "/*" 
-rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
-
-dim_clientes.coalesce(1).write\
+def salvar_df(df, file):
+    output = "/projeto_final/dados_saida/" + file
+    erase = "hdfs dfs -rm " + output + "/*" 
+    rename = "hdfs dfs -mv /projeto_final/staging/part-*" + ' ' + output + '/' + file + ".csv"
+    
+    df.coalesce(1).write\
         .format("csv")\
         .option("header", True)\
         .option("delimiter", ";")\
         .mode("overwrite")\
-        .save(stage)
+        .save("/projeto_final/staging/")
 
-os.system(erase)
-os.system(rename)
+    os.system(erase)
+    os.system(rename)
 
-# Dimensao Produtos
-
-file = 'dimprodutos'
-output = "/projeto_final/dados_saida/" + file
-erase = "hdfs dfs -rm " + output + "/*" 
-rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
-
-dim_produtos.coalesce(1).write\
-        .format("csv")\
-        .option("header", True)\
-        .option("delimiter", ";")\
-        .mode("overwrite")\
-        .save(stage)
-
-os.system(erase)
-os.system(rename)
-
-# Dimensao Localidade
-
-file = 'dimlocalidade' 
-output = "/projeto_final/dados_saida/" + file
-erase = "hdfs dfs -rm " + output + "/*" 
-rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
-
-dim_localidade.coalesce(1).write\
-        .format("csv")\
-        .option("header", True)\
-        .option("delimiter", ";")\
-        .mode("overwrite")\
-        .save(stage)
-
-os.system(erase)
-os.system(rename)
-
-# Dimensao Tempo
-
-file = 'dimtempo' 
-output = "/projeto_final/dados_saida/" + file
-erase = "hdfs dfs -rm " + output + "/*" 
-rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
-
-dim_tempo.coalesce(1).write\
-        .format("csv")\
-        .option("header", True)\
-        .option("delimiter", ";")\
-        .mode("overwrite")\
-        .save(stage)
-os.system(erase)
-os.system(rename)
-
-# Fato Vendas
-
-file = 'fatovendas'
-output = "/projeto_final/dados_saida/" + file
-erase = "hdfs dfs -rm " + output + "/*" 
-rename = "hdfs dfs -mv " + stage + "part-*" + ' ' + output + '/' + file + ".csv"
-
-ft_vendas.coalesce(1).write\
-        .format("csv")\
-        .option("header", True)\
-        .option("delimiter", ";")\
-        .mode("overwrite")\
-        .save(stage)
-
-os.system(erase)
-os.system(rename)
+salvar_df(dim_clientes, 'dimclientes')
+salvar_df(dim_produtos, 'dimprodutos')
+salvar_df(dim_localidade, 'dimlocalidade')
+salvar_df(dim_tempo, 'dimtempo')
+salvar_df(ft_vendas, 'fatovendas')
