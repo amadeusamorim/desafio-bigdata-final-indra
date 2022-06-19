@@ -2572,13 +2572,43 @@
 											"top": 438,
 											"width": 276,
 											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "AAAAAAGBfKg6ceqCqmk=",
+											"_parent": {
+												"$ref": "AAAAAAGBOeJ+YOkilaw="
+											},
+											"model": {
+												"$ref": "AAAAAAGBfKg6W+p/d84="
+											},
+											"font": "Arial;13;0",
+											"left": 397,
+											"top": 438,
+											"width": 276,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "AAAAAAGBfKh8eeqJQHc=",
+											"_parent": {
+												"$ref": "AAAAAAGBOeJ+YOkilaw="
+											},
+											"model": {
+												"$ref": "AAAAAAGBfKh8cuqGo00="
+											},
+											"font": "Arial;13;0",
+											"left": 397,
+											"top": 453,
+											"width": 276,
+											"height": 13
 										}
 									],
 									"font": "Arial;13;0",
 									"left": 392,
 									"top": 343,
 									"width": 286,
-									"height": 98
+									"height": 128
 								}
 							],
 							"font": "Arial;13;0",
@@ -3439,6 +3469,21 @@
 										},
 										{
 											"_type": "ERDColumnView",
+											"_id": "AAAAAAGBfKaVJepofac=",
+											"_parent": {
+												"$ref": "AAAAAAGBOhlFF+wp+jU="
+											},
+											"model": {
+												"$ref": "AAAAAAGBfKaVBOplMZI="
+											},
+											"font": "Arial;13;0",
+											"left": 805,
+											"top": 687,
+											"width": 259.5478515625,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
 											"_id": "AAAAAAGBOhlFKuxFm+s=",
 											"_parent": {
 												"$ref": "AAAAAAGBOhlFF+wp+jU="
@@ -3448,7 +3493,7 @@
 											},
 											"font": "Arial;13;0",
 											"left": 805,
-											"top": 687,
+											"top": 702,
 											"width": 259.5478515625,
 											"height": 13
 										},
@@ -3463,7 +3508,7 @@
 											},
 											"font": "Arial;13;0",
 											"left": 805,
-											"top": 702,
+											"top": 717,
 											"width": 259.5478515625,
 											"height": 13
 										},
@@ -3482,20 +3527,35 @@
 											"top": 746,
 											"width": 259.5478515625,
 											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "AAAAAAGBfKbY7upvKDc=",
+											"_parent": {
+												"$ref": "AAAAAAGBOhlFF+wp+jU="
+											},
+											"model": {
+												"$ref": "AAAAAAGBfKbY1epsns8="
+											},
+											"font": "Arial;13;0",
+											"left": 805,
+											"top": 732,
+											"width": 259.5478515625,
+											"height": 13
 										}
 									],
 									"font": "Arial;13;0",
 									"left": 800,
 									"top": 607,
 									"width": 269.5478515625,
-									"height": 113
+									"height": 143
 								}
 							],
 							"font": "Arial;13;0",
 							"left": 800,
 							"top": 584,
 							"width": 269.5478515625,
-							"height": 145,
+							"height": 181,
 							"nameLabel": {
 								"$ref": "AAAAAAGBOhlFF+woO6w="
 							},
@@ -3687,6 +3747,26 @@
 							},
 							"name": "VL_MARGEM",
 							"type": "DOUBLE",
+							"length": 0
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "AAAAAAGBfKg6W+p/d84=",
+							"_parent": {
+								"$ref": "AAAAAAGBOeJ+YelkBPI="
+							},
+							"name": "MARGEM_VENDAS",
+							"type": "DOUBLE",
+							"length": 0
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "AAAAAAGBfKh8cuqGo00=",
+							"_parent": {
+								"$ref": "AAAAAAGBOeJ+YelkBPI="
+							},
+							"name": "PRODUTOS_VENDIDOS",
+							"type": "INTEGER",
 							"length": 0
 						}
 					]
@@ -4136,6 +4216,16 @@
 						},
 						{
 							"_type": "ERDColumn",
+							"_id": "AAAAAAGBfKaVBOplMZI=",
+							"_parent": {
+								"$ref": "AAAAAAGBOhksq+uK9Ug="
+							},
+							"name": "NR_SEMANA",
+							"type": "INTEGER",
+							"length": 0
+						},
+						{
+							"_type": "ERDColumn",
 							"_id": "AAAAAAGBOhksq+uV3uw=",
 							"_parent": {
 								"$ref": "AAAAAAGBOhksq+uK9Ug="
@@ -4161,6 +4251,16 @@
 								"$ref": "AAAAAAGBOhksq+uK9Ug="
 							},
 							"name": "Column2"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "AAAAAAGBfKbY1epsns8=",
+							"_parent": {
+								"$ref": "AAAAAAGBOhksq+uK9Ug="
+							},
+							"name": "NR_DIA_SEMANA",
+							"type": "INTEGER",
+							"length": 0
 						}
 					]
 				}
