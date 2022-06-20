@@ -83,11 +83,18 @@ Abaixo estão listadas as pastas e arquivos, representando a execução da Etapa
 * *rollback*: Script para deleção dos arquivos .csv do HDFS e das tabelas e BD do Hive, em caso de erro na execução das tabelas.
 * *rollout*: Script para criação das pastas no HDFS e para chamar os scrips que criam as tabelas.
 
+### 👨‍💻 Rodando o código
+* *Instale os containers*: É importante que você tenha instalado os containers do hive-server e spark para a execução do projeto.
+* *Rollback*: Execute o script rollback para que as pastas sejam 'limpas' e tabelas desfeitas.
+* *Rollout*: Execute o script rollout para criação de pastas no hdfs e tabelas.
+* *jobs_hive*: Arquivo que se encontra na pasta 'malha' e que irá inserir os dados na tabela. 
+* *jobs_spark*: Executar esse job no container spark para tratamento dos dados e migração das dimensões para a pasta do Unix.
+
 ### ⚙️ Executando os testes
 * O teste consiste em verificar se o quantitativo de vendas do arquivo inicial (retirando as linhas totalmente nulas), condiziam com a tabela FATO do fim, após todo o tratamento. Foi utilizado a linguagem Python com condições que informariam se a validação foi ok ou não.
 
 ### 📊 Dashboard
-[![hXYUzJ.md.jpg](https://iili.io/hXYUzJ.md.jpg)](https://freeimage.host/i/hXYUzJ)
+[![hrmMkG.md.png](https://iili.io/hrmMkG.md.png)](https://freeimage.host/i/hrmMkG)
 
 ### 🔧 Ferramentas utilizadas
 - ``Shell Script``
