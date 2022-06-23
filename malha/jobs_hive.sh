@@ -1,114 +1,69 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# 
+# jobs_hive.sh - Malha para inserir os dados nas tabelas
+#
+# Autor:      Amadeus Amorim
+# Manutenção: Amadeus Amorim
+#
+# ------------------------------------------------------------------------ #
+#   Código que irá acionar os demais scripts que farão a ingestão dos dados na
+#  tabela interna e externa e em seguida fará testes para certificar que os da-
+#  dos foram inseridos.
+#
+#  Exemplos:
+#       $ ./jobs_hive.sh
+#       Neste exemplo o programa vai inserir os dados nas tabelas externas e in-
+#  ternas.
+#
+# ------------------------------------------------------------------------ #
+# Histórico:
+#
+#   v1.0 12/06/2022, Amadeus:
+#     - Criação de vários arquivos create tables para cada tabela
+#   v1.1 22/06/2022, Amadeus:
+#     - Adicionando comentários e identando o código
+#     - Adicionando variáveis
+#     - Adicionando funções
+#     - Adicionando parâmetros
+# ------------------------------------------------------------------------ #
+# Testado em:
+#   bash 5.0.17(1)-release
+# --------------------------- VARIÁVEIS ---------------------------------- #
 
-# Ler Arquivo de Clientes e enviar para o HDFS
-echo "Efetuando a ingestao em Clientes"
-bash ../scripts/update_data_external_table_clientes.sh dados_entrada
-bash ../scripts/insert_data_worked_table_clientes.sh
+AMARELO="\033[33;1m"
+VERDE="\033[32;1m"
 
-# Verificando as partições
-echo "Listando as Partições"
-beeline -u jdbc:hive2://localhost:10000 -e "SHOW PARTITIONS desafio_final.TBL_CLIENTES;"
+FIMCOR="\033[m"
 
-# Descrevendo a tabela 
-echo "Descrevendo a Tabela Clientes"
-beeline -u jdbc:hive2://localhost:10000 -e "DESCRIBE desafio_final.TBL_CLIENTES;"
+# ------------------------------- FUNÇÕES ----------------------------------------- #
 
-# Count na tabela
-echo "Quantidade de Registros da Tabela"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT COUNT(*) FROM desafio_final.TBL_CLIENTES;"
+TesteTabelas () {
 
-# Mostrando as 10 primeiras linhas da tabela
-echo "Mostrando Apenas os 10 primeiros"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT * FROM desafio_final.TBL_CLIENTES LIMIT 10;"
+TABLE_NAME=$(echo "$1" | tr [a-z] [A-Z]) # Parâmetro para UPPER
 
-##########################
+echo -e "${VERDE}LISTANDO AS PARTIÇÕES ${FIMCOR}"
+beeline -u jdbc:hive2://localhost:10000 -e "SHOW PARTITIONS desafio_final.TBL_${TABLE_NAME};"
 
-# Ler Arquivo de Divisao e enviar para o HDFS
-echo "Efetuando a ingestao em Divisao"
-bash ../scripts/update_data_external_table_divisao.sh dados_entrada
-bash ../scripts/insert_data_worked_table_divisao.sh
+echo -e "${VERDE}DESCREVENDO A TABELA ${TABLE_NAME}${FIMCOR}"
+beeline -u jdbc:hive2://localhost:10000 -e "DESCRIBE desafio_final.${TABLE_NAME};"
 
-# Verificando as partições
-echo "Listando as Partições"
-beeline -u jdbc:hive2://localhost:10000 -e "SHOW PARTITIONS desafio_final.TBL_DIVISAO;"
+echo -e "${VERDE}QUANTIDADE DE REGISTROS DA TABELA ${TABLE_NAME}${FIMCOR}"
+beeline -u jdbc:hive2://localhost:10000 -e "SELECT COUNT(*) FROM desafio_final.TBL_${TABLE_NAME};"
 
-# Descrevendo a tabela 
-echo "Descrevendo a Tabela Divisao"
-beeline -u jdbc:hive2://localhost:10000 -e "DESCRIBE desafio_final.TBL_DIVISAO;"
+echo -e "${VERDE}MOSTRANDO APENAS OS 10 PRIMEIROS REGISTROS${FIMCOR}"
+beeline -u jdbc:hive2://localhost:10000 -e "SELECT * FROM desafio_final.TBL_${TABLE_NAME} LIMIT 10;"
+}
 
-# Count na tabela
-echo "Quantidade de Registros da Divisao"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT COUNT(*) FROM desafio_final.TBL_DIVISAO;"
+# ------------------------------- EXECUÇÃO ----------------------------------------- #
 
-# Mostrando as 10 primeiras linhas da tabela
-echo "Mostrando Apenas os 10 primeiros"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT * FROM desafio_final.TBL_DIVISAO LIMIT 10;"
+echo -e "${AMARELO}EFETUANDO A INGESTÃO NAS TABELAS EXTERNAS ${FIMCOR}"
+bash ../scripts/update_data_external_table.sh dados_entrada
 
-##########################
+echo -e "${AMARELO}EFETUANDO A INGESTÃO NAS TABELAS WORKED ${FIMCOR}"
+bash ../scripts/insert_data_worked_table.sh
 
-# Ler Arquivo de Endereco e enviar para o HDFS
-echo "Efetuando a ingestao em Endereco"
-bash ../scripts/update_data_external_table_endereco.sh dados_entrada
-bash ../scripts/insert_data_worked_table_endereco.sh
-
-# Verificando as partições
-echo "Listando as Partições"
-beeline -u jdbc:hive2://localhost:10000 -e "SHOW PARTITIONS desafio_final.TBL_ENDERECO;"
-
-# Descrevendo a tabela 
-echo "Descrevendo a Tabela Endereco"
-beeline -u jdbc:hive2://localhost:10000 -e "DESCRIBE desafio_final.TBL_ENDERECO;"
-
-# Count na tabela
-echo "Quantidade de Registros da Endereco"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT COUNT(*) FROM desafio_final.TBL_ENDERECO;"
-
-# Mostrando as 10 primeiras linhas da tabela
-echo "Mostrando Apenas os 10 primeiros"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT * FROM desafio_final.TBL_ENDERECO LIMIT 10;"
-
-##########################
-
-# Ler Arquivo de Regiao e enviar para o HDFS
-echo "Efetuando a ingestao em Regiao"
-bash ../scripts/update_data_external_table_regiao.sh dados_entrada
-bash ../scripts/insert_data_worked_table_regiao.sh
-
-# Verificando as partições
-echo "Listando as Partições"
-beeline -u jdbc:hive2://localhost:10000 -e "SHOW PARTITIONS desafio_final.TBL_REGIAO;"
-
-# Descrevendo a tabela 
-echo "Descrevendo a Tabela Regiao"
-beeline -u jdbc:hive2://localhost:10000 -e "DESCRIBE desafio_final.TBL_REGIAO;"
-
-# Count na tabela
-echo "Quantidade de Registros da Regiao"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT COUNT(*) FROM desafio_final.TBL_REGIAO;"
-
-# Mostrando as 10 primeiras linhas da tabela
-echo "Mostrando Apenas os 10 primeiros"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT * FROM desafio_final.TBL_REGIAO LIMIT 10;"
-
-##########################
-
-# Ler Arquivo de Vendas e enviar para o HDFS
-echo "Efetuando a ingestao em Vendas"
-bash ../scripts/update_data_external_table_vendas.sh dados_entrada
-bash ../scripts/insert_data_worked_table_vendas.sh
-
-# Verificando as partições
-echo "Listando as Partições"
-beeline -u jdbc:hive2://localhost:10000 -e "SHOW PARTITIONS desafio_final.TBL_VENDAS;"
-
-# Descrevendo a tabela 
-echo "Descrevendo a Tabela Vendas"
-beeline -u jdbc:hive2://localhost:10000 -e "DESCRIBE desafio_final.TBL_VENDAS;"
-
-# Count na tabela
-echo "Quantidade de Registros da Vendas"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT COUNT(*) FROM desafio_final.TBL_VENDAS;"
-
-# Mostrando as 10 primeiras linhas da tabela
-echo "Mostrando Apenas os 10 primeiros"
-beeline -u jdbc:hive2://localhost:10000 -e "SELECT * FROM desafio_final.TBL_VENDAS LIMIT 10;"
+TesteTabelas clientes
+TesteTabelas divisao
+TesteTabelas endereco
+TesteTabelas regiao
+TesteTabelas vendas

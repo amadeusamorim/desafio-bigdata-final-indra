@@ -1,46 +1,86 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# 
+# rollout.sh - Cria pastas no HDFS e aciona o script para criar tabelas
+#
+# Autor:      Amadeus Amorim
+# Manutenção: Amadeus Amorim
+#
+# ------------------------------------------------------------------------ #
+#   Irá criar pastas de entradas, para inserção das tabelas .csv "raw", além de 
+# criar uma pasta staging, para que os dados possam ser colocados lá enquanto 
+# são tratados e também cria as pastas no HDFS para as tabelas DIM e FATO.
+#   O rollout.sh também acionará o script create_tables.sh para que possa
+# assim criar as tabelas internas e externas do Hive.
+# em maiúsculo e em ordem alfabética.
+#
+#  Exemplos:
+#       $ ./rollout.sh
+#       Neste exemplo o programa vai criar as pastas e tabelas necessárias que 
+#       dão início a pipeline.
+# ------------------------------------------------------------------------ #
+# Histórico:
+#
+#   v1.0 12/06/2022, Amadeus:
+#     - Criação do rollout sem variáveis com arquivos à serem lidos de forma distinta
+#   v1.1 21/06/2022, Amadeus:
+#     - Adicionando comentários e identando o código
+#     - Adicionando variáveis
+#   v1.2 22/06/2022, Amadeus:
+#     - Adicionando funções
+#     - Adicionando parâmetros
+#     - Adicionando menu e help
+# ------------------------------------------------------------------------ #
+# Testado em:
+#   bash 5.0.17(1)-release
+# --------------------------- VARIÁVEIS ---------------------------------- #
 
-# Criando pastas no HDFS
+ENTRADA_HDFS="/projeto_final/"
+SAIDA_HDFS="/projeto_final/dados_saida/"
+STAGE_HDFS="/projeto_final/staging/"
+MENSAGEM_USO="
+  $(basename $0) - [OPÇÕES]
 
-echo -e "\n--- Criando Pastas de Entradas no HDFS ---\n"
+    -i - Cria pasta para tabelas raw (input) | Aguarda parâmetro com nome da pasta.
+    -o - Cria pasta para tabelas dimensão (output) | Aguarda parâmetro com nome da pasta.
+    -s - Cria pasta staginig
+    -h - Menu de ajuda
+"
+AMARELO="\033[33;1m"
+AZUL="\033[34;1m"
 
-echo "Pasta de Clientes - HDFS"
-hdfs dfs -mkdir -p /projeto_final/clientes
-echo "Pasta de Divisão - HDFS"
-hdfs dfs -mkdir -p /projeto_final/divisao
-echo "Pasta de Endereço - HDFS"
-hdfs dfs -mkdir -p /projeto_final/endereco
-echo "Pasta de Região - HDFS"
-hdfs dfs -mkdir -p /projeto_final/regiao
-echo "Pasta de Vendas - HDFS"
-hdfs dfs -mkdir -p /projeto_final/vendas
+# ------------------------------------------------------------------------ #
 
-echo -e "\n--- Criando Pasta Staging no HDFS ---\n"
-hdfs dfs -mkdir -p /projeto_final/staging
+# ------------------------------- FUNÇÕES ----------------------------------------- #
 
-echo -e "\n--- Criando Pastas para Dimensão e FATO no HDFS ---\n"
-echo "Pasta de Dimensão Clientes - HDFS"
-hdfs dfs -mkdir -p /projeto_final/dados_saida/dimclientes
-echo "Pasta de Dimensão Localidade - HDFS"
-hdfs dfs -mkdir -p /projeto_final/dados_saida/dimlocalidade
-echo "Pasta de Dimensão Produtos - HDFS"
-hdfs dfs -mkdir -p /projeto_final/dados_saida/dimprodutos
-echo "Pasta de Dimensão Tempo - HDFS"
-hdfs dfs -mkdir -p /projeto_final/dados_saida/dimtempo
-echo "Pasta de FATO Vendas - HDFS"
-hdfs dfs -mkdir -p /projeto_final/dados_saida/fatovendas
+CriaPasta () {
+  case "$1" in
+    -i) hdfs dfs -mkdir -p "${ENTRADA_HDFS}$2"        ;;
+    -o) hdfs dfs -mkdir -p "${SAIDA_HDFS}$2"          ;;
+    -s) hdfs dfs -mkdir -p "${STAGE_HDFS}"            ;;
+    -h) echo "$MENSAGEM_USO" && exit 0                ;;
+     *) echo "Opção Inválida, valide o -h." && exit 1 ;;
+  esac
+}
 
-# Executar o Create Tables
-echo -e "\n--- Criando Tabelas no Hive ---\n"
-cd scripts/create_tables
+# ------------------------------- EXECUÇÃO ----------------------------------------- #
 
-echo "Tabela Clientes"
-bash create_tables_clientes.sh
-echo "Tabela Divisao"
-bash create_tables_divisao.sh
-echo "Tabela Endereco"
-bash create_tables_endereco.sh
-echo "Tabela Regiao"
-bash create_tables_regiao.sh
-echo "Tabela Vendas"
-bash create_tables_vendas.sh
+echo -e "${AMARELO}CRIANDO PASTAS DE ENTRADAS NO HDFS"${FIMCOR}
+CriaPasta -i clientes
+CriaPasta -i divisao
+CriaPasta -i endereco
+CriaPasta -i regiao
+CriaPasta -i vendas
+
+echo -e "${AMARELO}CRIANDO PASTA STAGING NO HDFS${FIMCOR}"
+CriaPasta -s
+
+echo -e "${AMARELO}CRIANDO PASTAS DE SAÍDA NO HDFS${FIMCOR}"
+CriaPasta -o dimclientes
+CriaPasta -o dimlocalidade
+CriaPasta -o dimprodutos
+CriaPasta -o dimtempo
+CriaPasta -o fatovendas
+
+echo -e "${AZUL}CRIANDO TABELAS NO HIVE${FIMCOR}"
+cd scripts/create_tables 
+bash create_tables.sh # Executa script para criar tabelas
