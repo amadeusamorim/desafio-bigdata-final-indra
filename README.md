@@ -84,7 +84,30 @@ Abaixo estão listadas as pastas e arquivos, representando a execução da Etapa
 * *rollout*: Script para criação das pastas no HDFS e para chamar os scrips que criam as tabelas.
 
 ### 👨‍💻 Rodando o código
-* *Instale os containers*: É importante que você tenha instalado os containers do hive-server e spark para a execução do projeto.
+* *Instale os containers*: É importante que você tenha instalado os containers do hive-server e spark para a execução do projeto. Abaixo segue o passo à passo:
+1. Baixar Docker Compose: ``$ sudo curl -L https://github.com/docker/compose/releases/download/1.28.2/docker-
+compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose``
+
+2. Alterar permissão: ``$ sudo chmod +x /usr/local/bin/docker-compose``
+
+3. Testar instalação: ``$ docker-compose –version``
+
+4. Baixar conteudo do Cluster: ``$ git clone https://github.com/tiandrefreitas/docker-bigdata.git``
+
+5. Baixar as imagens: ``$ docker-compose pull``
+
+6. Listar as imagens: ``$ docker image ls``
+
+7. Executar os containers: ``$ docker-compose up –d``
+
+8. Ative os containers do Hive-Server e Spark (em terminais diferentes)
+``
+       $ docker exec -it hive-server bash
+`` e 
+``
+$ docker exec -it spark bash
+``
+* *Baixer esse repositório*: Após setar o ambiente, dar um git clone nesse repositório na pasta input, importante verificar se a pasta input local está sendo acessível por todos os containers envolvidos no processo.
 * *Rollback*: Execute o script rollback para que as pastas sejam 'limpas' e tabelas desfeitas.
 * *Rollout*: Execute o script rollout para criação de pastas no hdfs e tabelas.
 * *jobs_hive*: Arquivo que se encontra na pasta 'malha' e que irá inserir os dados na tabela. 
