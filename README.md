@@ -128,7 +128,3 @@ $ docker exec -it spark bash
 ### ✒️ Autor do desafio
 
 * **Caiuá França** - *desafio_bigdata_final* - [caiuafranca](https://github.com/caiuafranca/desafio_bigdata_final)
-
-
-:construction: *O código está finalizado, porém, passará por constantes atualizações.*
-
